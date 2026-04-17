@@ -14,10 +14,13 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origins(self) -> list[str]:
-        urls = [self.frontend_url]
+        urls: list[str] = []
+        if self.frontend_url.strip():
+            urls.append(self.frontend_url.strip())
         if self.frontend_urls:
             urls.extend(url.strip() for url in self.frontend_urls.split(",") if url.strip())
-        return list(dict.fromkeys(urls))
+        deduped = list(dict.fromkeys(urls))
+        return deduped if deduped else ["*"]
 
     class Config:
         env_file = ".env" if os.path.exists(".env") else None
