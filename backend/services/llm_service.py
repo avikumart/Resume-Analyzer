@@ -2,7 +2,10 @@ import json
 
 from cerebras.cloud.sdk import Cerebras
 
-from backend.config import settings
+try:
+    from backend.config import settings
+except ModuleNotFoundError:
+    from config import settings
 
 client = Cerebras(api_key=settings.cerebras_api_key)
 
