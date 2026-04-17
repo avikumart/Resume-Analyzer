@@ -1,17 +1,14 @@
 {
-  "builds": [
-    {
-      "src": "backend/index.py",
-      "use": "@vercel/python"
+  "version": 2,
+  "functions": {
+    "backend/index.py": {
+      "runtime": "python3.11"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "backend/index.py"
+      "source": "/(.*)",
+      "destination": "/backend/index.py"
     }
-  ],
-  "env": {
-    "PYTHONPATH": "/var/task"
-  }
+  ]
 }

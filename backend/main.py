@@ -17,6 +17,11 @@ app.add_middleware(
 app.include_router(analysis.router, prefix="/api/analyze", tags=["analysis"])
 
 
+@app.get("/")
+async def root():
+    return {"service": "resume-analyzer-api", "status": "ok"}
+
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
