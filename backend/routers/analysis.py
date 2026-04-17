@@ -1,8 +1,8 @@
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from backend.models.schemas import AnalysisResponse
-from backend.services import db_service, llm_service
-from backend.utils.parser import extract_text
+from models.schemas import AnalysisResponse
+from services import db_service, llm_service
+from utils.parser import extract_text
 
 router = APIRouter()
 

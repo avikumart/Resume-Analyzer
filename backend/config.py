@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_service_key: str
 
-    frontend_url: str = "http://localhost:3000"
+    frontend_url: str = ""
     frontend_urls: str = ""
 
     @property
