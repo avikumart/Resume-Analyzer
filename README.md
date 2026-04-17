@@ -11,6 +11,7 @@ AI-powered resume analysis using **Cerebras LLM** (llama-4-scout), **FastAPI**, 
 smart-resume/
 ├── backend/
 │   ├── main.py                  # FastAPI entrypoint
+│   ├── index.py                 # Vercel entrypoint
 │   ├── config.py                # Settings via pydantic-settings
 │   ├── requirements.txt
 │   ├── supabase_schema.sql      # Run once in Supabase SQL editor
@@ -87,6 +88,70 @@ npm run dev
 
 ---
 
+## Deploy On Vercel
+
+Deploy the frontend and backend as two separate Vercel projects from the same repository.
+
+### 1. Deploy the backend
+
+1. Import this repository into Vercel.
+2. Create a project with `Root Directory` set to `backend`.
+3. Add these environment variables in the Vercel project:
+   - `CEREBRAS_API_KEY`
+   - `CEREBRAS_MODEL`
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_KEY`
+   - `FRONTEND_URL`
+   - `FRONTEND_URLS` (optional, comma-separated list for preview and custom domains)
+4. Deploy the project.
+
+The backend uses [backend/index.py](/Users/avikumart/Documents/GitHub/Resume-Analyzer/backend/index.py:1) as the Vercel entrypoint and exposes:
+
+- `GET /health`
+- `POST /api/analyze/`
+- `GET /api/analyze/history`
+- `GET /api/analyze/{id}`
+
+Example backend environment values:
+
+```env
+CEREBRAS_API_KEY=your-cerebras-api-key
+CEREBRAS_MODEL=llama-4-scout-17b-16e-instruct
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+FRONTEND_URL=https://your-frontend-project.vercel.app
+FRONTEND_URLS=https://your-frontend-project.vercel.app,https://your-preview-frontend.vercel.app
+```
+
+### 2. Deploy the frontend
+
+1. Import the same repository into Vercel again.
+2. Create a second project with `Root Directory` set to `frontend`.
+3. Add these environment variables:
+   - `NEXT_PUBLIC_API_URL`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy the project.
+
+Example frontend environment values:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-backend-project.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 3. Update CORS after the first deploy
+
+After the frontend gets its Vercel URL, set:
+
+- `FRONTEND_URL` to your primary frontend domain
+- `FRONTEND_URLS` to any extra preview or custom frontend domains you want to allow
+
+Then redeploy the backend so the new environment variables take effect.
+
+---
+
 ## API Reference
 
 | Method | Endpoint | Description |
@@ -156,4 +221,4 @@ npm run dev
 - [ ] Export tailored resume as DOCX download
 - [ ] History page with past analyses
 - [ ] Role-specific rewrite modes (SWE, PM, Data Science, etc.)
-- [ ] Deploy: Railway (backend) + Vercel (frontend)
+- [ ] Harden deployment configuration and monitoring
