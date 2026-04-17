@@ -2,7 +2,7 @@ import json
 
 from cerebras.cloud.sdk import Cerebras
 
-from config import settings
+from backend.config import settings
 
 client = Cerebras(api_key=settings.cerebras_api_key)
 

@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings
 
 
@@ -19,7 +20,7 @@ class Settings(BaseSettings):
         return list(dict.fromkeys(urls))
 
     class Config:
-        env_file = ".env"
+        env_file = ".env" if os.path.exists(".env") else None
 
 
 settings = Settings()

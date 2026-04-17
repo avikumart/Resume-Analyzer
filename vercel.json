@@ -1,0 +1,17 @@
+{
+  "builds": [
+    {
+      "src": "backend/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "backend/index.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task"
+  }
+}
