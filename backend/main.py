@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import settings
-from routers import analysis
+from backend.config import settings
+from backend.routers import analysis
 
 app = FastAPI(title="Smart Resume & Job Match Analyzer", version="1.0.0")
 
