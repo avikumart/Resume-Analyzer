@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+  "rewrites": [
+    {
+      "source": "/api/analyze/:path*",
+      "destination": "https://resume-analyzer-gamma-gules.vercel.app/api/analyze/:path*"
+    }
+  ]
+}
