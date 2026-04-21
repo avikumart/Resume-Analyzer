@@ -2,12 +2,12 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
-    from backend.config import settings
+    from backend.env import get_allowed_origins
     from backend.models.schemas import AnalysisResponse
     from backend.services import db_service, llm_service
     from backend.utils.parser import extract_text
 except ModuleNotFoundError:
-    from config import settings
+    from env import get_allowed_origins
     from models.schemas import AnalysisResponse
     from services import db_service, llm_service
     from utils.parser import extract_text
@@ -16,8 +16,8 @@ app = FastAPI(title="Smart Resume & Job Match Analyzer", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_credentials=settings.allowed_origins != ["*"],
+    allow_origins=get_allowed_origins(),
+    allow_credentials=get_allowed_origins() != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -3,11 +3,12 @@ import json
 from cerebras.cloud.sdk import Cerebras
 
 try:
-    from backend.config import settings
+    from backend.env import get_required_env
 except ModuleNotFoundError:
-    from config import settings
+    from env import get_required_env
 
-client = Cerebras(api_key=settings.cerebras_api_key)
+client = Cerebras(api_key=get_required_env("CEREBRAS_API_KEY"))
+MODEL_NAME = get_required_env("CEREBRAS_MODEL")
 
 SYSTEM_PROMPT = """You are an expert resume analyst. Given a resume and a job description, return a JSON object with:
 - match_score: a number 0-100
@@ -29,7 +30,7 @@ async def analyze_resume(resume_text: str, job_description: str) -> dict:
 Analyze the resume against the job description and return the structured JSON."""
 
     response = client.chat.completions.create(
-        model=settings.cerebras_model,
+        model=MODEL_NAME,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},

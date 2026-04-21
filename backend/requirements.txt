@@ -3,7 +3,6 @@ uvicorn[standard]==0.32.0
 mangum==0.17.0
 python-multipart==0.0.12
 pydantic==2.9.2
-pydantic-settings==2.6.0
 
 # Cerebras SDK
 cerebras-cloud-sdk==1.19.0

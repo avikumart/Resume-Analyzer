@@ -1,11 +1,14 @@
 from supabase import create_client
 
 try:
-    from backend.config import settings
+    from backend.env import get_required_env
 except ModuleNotFoundError:
-    from config import settings
+    from env import get_required_env
 
-supabase = create_client(settings.supabase_url, settings.supabase_service_key)
+supabase = create_client(
+    get_required_env("SUPABASE_URL"),
+    get_required_env("SUPABASE_SERVICE_KEY"),
+)
 
 
 async def save_analysis(analysis: dict, resume_text: str, job_description: str) -> dict:
