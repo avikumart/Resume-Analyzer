@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     FRONTEND_URL: str = ""
     FRONTEND_URLS: str = ""
+    CORS_ORIGINS: str = ""  # comma-separated origins
 
     @property
     def allowed_origins(self) -> list[str]:
@@ -19,9 +20,10 @@ class Settings(BaseSettings):
             urls.append(self.FRONTEND_URL.strip())
         if self.FRONTEND_URLS:
             urls.extend(url.strip() for url in self.FRONTEND_URLS.split(",") if url.strip())
+        if self.CORS_ORIGINS:
+            urls.extend(url.strip() for url in self.CORS_ORIGINS.split(",") if url.strip())
         deduped = list(dict.fromkeys(urls))
         return deduped if deduped else ["*"]
-
     class Config:
         env_file = ".env" if os.path.exists(".env") else None
 
