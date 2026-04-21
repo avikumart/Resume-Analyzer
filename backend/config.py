@@ -3,22 +3,22 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    cerebras_api_key: str
-    cerebras_model: str = "llama-4-scout-17b-16e-instruct"
+    CEREBRAS_API_KEY: str
+    CEREBRAS_MODEL: str 
 
-    supabase_url: str
-    supabase_service_key: str
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_KEY: str
 
-    frontend_url: str = ""
-    frontend_urls: str = ""
+    FRONTEND_URL: str = ""
+    FRONTEND_URLS: str = ""
 
     @property
     def allowed_origins(self) -> list[str]:
         urls: list[str] = []
-        if self.frontend_url.strip():
-            urls.append(self.frontend_url.strip())
-        if self.frontend_urls:
-            urls.extend(url.strip() for url in self.frontend_urls.split(",") if url.strip())
+        if self.FRONTEND_URL.strip():
+            urls.append(self.FRONTEND_URL.strip())
+        if self.FRONTEND_URLS:
+            urls.extend(url.strip() for url in self.FRONTEND_URLS.split(",") if url.strip())
         deduped = list(dict.fromkeys(urls))
         return deduped if deduped else ["*"]
 
