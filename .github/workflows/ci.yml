@@ -34,7 +34,7 @@ jobs:
       - name: Compile backend
         run: python -m compileall -q .
       - name: Import FastAPI application
-        run: python -c "from main import app; assert app.title == 'Smart Resume & Job Match Analyzer'"
+        run: python -c "from api.index import app; assert app.title == 'Smart Resume & Job Match Analyzer'"
 
   frontend:
     name: Frontend checks

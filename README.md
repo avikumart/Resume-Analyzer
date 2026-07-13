@@ -23,7 +23,8 @@ Resume-Analyzer/
 │   ├── deploy-frontend.yml
 │   └── deploy-database.yml
 ├── backend/
-│   ├── main.py                  # FastAPI application and routes
+│   ├── main.py                  # FastAPI application and local entrypoint
+│   ├── api/index.py             # Vercel ASGI entrypoint
 │   ├── env.py                   # Environment loading and CORS configuration
 │   ├── models/schemas.py        # Pydantic response models
 │   ├── services/
