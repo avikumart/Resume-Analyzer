@@ -1,41 +1,20 @@
 import os
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
+    from backend.env import get_allowed_origins
     from backend.models.schemas import AnalysisResponse
     from backend.services import db_service, llm_service
     from backend.utils.parser import extract_text
 except ModuleNotFoundError:
+    from env import get_allowed_origins
     from models.schemas import AnalysisResponse
     from services import db_service, llm_service
     from utils.parser import extract_text
-
-
-def get_allowed_origins() -> list[str]:
-    origins: list[str] = []
-
-    cors_origins = os.getenv("CORS_ORIGINS", "")
-    if cors_origins.strip():
-        origins.extend(origin.strip() for origin in cors_origins.split(",") if origin.strip())
-
-    frontend_url = os.getenv("FRONTEND_URL", "").strip()
-    if frontend_url:
-        origins.append(frontend_url)
-
-    frontend_urls = os.getenv("FRONTEND_URLS", "")
-    if frontend_urls.strip():
-        origins.extend(origin.strip() for origin in frontend_urls.split(",") if origin.strip())
-
-    # Add localhost for development
-    dev_origins = ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000"]
-    origins.extend(dev_origins)
-
-    deduped = list(dict.fromkeys(origins))
-    return deduped if deduped else ["*"]
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -57,7 +36,7 @@ allowed_origins = get_allowed_origins()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=allowed_origins != ["*"],
+    allow_credentials=bool(allowed_origins),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -78,7 +57,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "resume-analyzer-api",
-        "timestamp": os.getenv("RENDER_SERVICE_ID", "local")
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -88,7 +67,10 @@ async def analyze(
     job_description: str = Form(...),
 ):
     """Analyze resume against job description"""
-    resume_text = await extract_text(resume)
+    try:
+        resume_text = await extract_text(resume)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not resume_text.strip():
         raise HTTPException(status_code=400, detail="Could not extract text from resume")
 

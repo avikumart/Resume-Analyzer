@@ -50,5 +50,14 @@ def get_allowed_origins() -> list[str]:
 
     origins.extend(get_csv_env("FRONTEND_URLS"))
 
-    deduped = list(dict.fromkeys(origins))
-    return deduped if deduped else ["*"]
+    if get_env("ENVIRONMENT", "development").lower() != "production":
+        origins.extend(
+            [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+            ]
+        )
+
+    # An empty production list is intentional. The frontend proxies /api through
+    # Vercel, so the browser does not need cross-origin access to the API.
+    return list(dict.fromkeys(origins))

@@ -5,8 +5,13 @@ const nextConfig = {
   // Proxy /api/* → backend on Vercel in production
   // In development, set NEXT_PUBLIC_API_URL in .env.local instead
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL;
-    if (!backendUrl) return [];
+    const backendUrl = process.env.BACKEND_URL?.replace(/\/$/, "");
+    if (!backendUrl) {
+      if (process.env.VERCEL_ENV === "production") {
+        throw new Error("BACKEND_URL must be set for the production frontend deployment");
+      }
+      return [];
+    }
  
     return [
       {
@@ -16,6 +21,5 @@ const nextConfig = {
     ];
   },
 };
- 
+
 module.exports = nextConfig;
- 

@@ -1,14 +1,6 @@
 {
-  "version": 2,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "rewrites": [
-    {
-      "source": "/api/analyze/:path*",
-      "destination": "https://resume-analyzer-gamma-gules.vercel.app/api/analyze/:path*"
-    }
-  ]
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build"
 }
