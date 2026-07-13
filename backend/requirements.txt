@@ -1,8 +1,8 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
-python-dotenv==1.0.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
-aiofiles==23.2.1
-httpx==0.25.1
+fastapi==0.139.0
+uvicorn[standard]==0.51.0
+python-multipart==0.0.32
+pydantic==2.13.4
+cerebras-cloud-sdk==1.67.0
+supabase==2.31.0
+pypdf==6.14.2
+python-docx==1.2.0

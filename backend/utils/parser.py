@@ -18,7 +18,7 @@ async def extract_text(file: UploadFile) -> str:
 
 
 def _extract_pdf(content: bytes) -> str:
-    from PyPDF2 import PdfReader
+    from pypdf import PdfReader
 
     reader = PdfReader(io.BytesIO(content))
     return "\n".join(page.extract_text() or "" for page in reader.pages)

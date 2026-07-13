@@ -1,18 +1,10 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "main.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb"
-      }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "functions": {
+    "main.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{tests/**,__pycache__/**,**/*.pyc,.env,.env.*}"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/main.py"
-    }
-  ]
+  }
 }
