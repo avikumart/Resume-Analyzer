@@ -52,13 +52,23 @@ async def root():
     }
 
 
-@app.get("/health")
-async def health_check():
+def health_response() -> dict[str, str]:
     return {
         "status": "healthy",
         "service": "resume-analyzer-api",
         "timestamp": datetime.now(UTC).isoformat(),
     }
+
+
+@app.get("/health")
+async def health_check():
+    return health_response()
+
+
+@app.get("/api/health")
+async def api_health_check():
+    """Health endpoint reachable through the frontend's /api proxy."""
+    return health_response()
 
 
 @app.post("/api/analyze/", response_model=AnalysisResponse, tags=["analysis"])

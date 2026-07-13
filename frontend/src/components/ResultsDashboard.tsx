@@ -1,85 +1,87 @@
 import { AnalysisResult } from "../utils/api";
+import styles from "../styles/Home.module.css";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
 }
 
+function scoreLabel(score: number): string {
+  if (score >= 80) return "Strong match";
+  if (score >= 60) return "Good foundation";
+  return "Needs tailoring";
+}
+
 export default function ResultsDashboard({ result }: ResultsDashboardProps) {
   return (
-    <div style={{ marginTop: "2rem" }}>
-      {/* Score Ring */}
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 120,
-            height: 120,
-            borderRadius: "50%",
-            border: `6px solid ${result.match_score >= 70 ? "#22c55e" : result.match_score >= 40 ? "#f59e0b" : "#ef4444"}`,
-            fontSize: "2rem",
-            fontWeight: "bold",
-          }}
-        >
-          {result.match_score}%
+    <section className={styles.resultsCard} aria-labelledby="results-title">
+      <div className={styles.resultsHeader}>
+        <div>
+          <span className={styles.eyebrow}>Analysis complete</span>
+          <h2 id="results-title">Your match report</h2>
         </div>
-        <p style={{ marginTop: "0.5rem", color: "#666" }}>Match Score</p>
+        <span className={styles.analysisId}>Report {result.id.slice(0, 8)}</span>
       </div>
 
-      {/* Matched Skills */}
-      <section style={{ marginBottom: "1.5rem" }}>
-        <h3>Matched Skills</h3>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-          {result.matched_skills.map((skill) => (
-            <span
-              key={skill}
-              style={{
-                background: "#dcfce7",
-                color: "#166534",
-                padding: "0.25rem 0.75rem",
-                borderRadius: 16,
-                fontSize: "0.875rem",
-              }}
-            >
-              {skill}
-            </span>
+      <div className={styles.scorePanel}>
+        <div
+          className={styles.scoreRing}
+          style={{ "--score": `${Math.min(100, Math.max(0, result.match_score)) * 3.6}deg` } as React.CSSProperties}
+          aria-label={`Match score ${result.match_score} percent`}
+        >
+          <div><strong>{Math.round(result.match_score)}</strong><span>%</span></div>
+        </div>
+        <div>
+          <span className={styles.scoreLabel}>{scoreLabel(result.match_score)}</span>
+          <p>{result.summary}</p>
+        </div>
+      </div>
+
+      <div className={styles.resultGrid}>
+        <section className={styles.resultSection}>
+          <div className={styles.sectionTitle}>
+            <h3>Matched skills</h3>
+            <span>{result.matched_skills.length}</span>
+          </div>
+          <div className={styles.skillList}>
+            {result.matched_skills.map((skill) => <span className={styles.matchedSkill} key={skill}>{skill}</span>)}
+          </div>
+        </section>
+
+        <section className={styles.resultSection}>
+          <div className={styles.sectionTitle}>
+            <h3>Skills to strengthen</h3>
+            <span>{result.missing_skills.length}</span>
+          </div>
+          <div className={styles.gapList}>
+            {result.missing_skills.map((item) => (
+              <div className={styles.gapItem} key={item.skill}>
+                <span>{item.skill}</span>
+                <small className={styles[item.importance.replaceAll("-", "")] || styles.recommended}>
+                  {item.importance}
+                </small>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <section className={styles.suggestionsSection}>
+        <div className={styles.sectionTitle}>
+          <h3>Suggested bullet rewrites</h3>
+          <span>{result.bullet_suggestions.length}</span>
+        </div>
+        <div className={styles.suggestionList}>
+          {result.bullet_suggestions.map((suggestion, index) => (
+            <article className={styles.suggestion} key={`${suggestion.section}-${index}`}>
+              <span className={styles.sectionPill}>{suggestion.section}</span>
+              <div className={styles.beforeAfter}>
+                <div><small>Before</small><p>{suggestion.original}</p></div>
+                <div className={styles.after}><small>Stronger version</small><p>{suggestion.rewritten}</p></div>
+              </div>
+            </article>
           ))}
         </div>
       </section>
-
-      {/* Missing Skills / Gaps */}
-      <section style={{ marginBottom: "1.5rem" }}>
-        <h3>Skill Gaps</h3>
-        <ul>
-          {result.missing_skills.map((ms) => (
-            <li key={ms.skill}>
-              <strong>{ms.skill}</strong>{" "}
-              <span style={{ color: ms.importance === "critical" ? "#ef4444" : "#f59e0b" }}>
-                ({ms.importance})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Bullet Rewrites */}
-      <section style={{ marginBottom: "1.5rem" }}>
-        <h3>Bullet Suggestions</h3>
-        {result.bullet_suggestions.map((bs, i) => (
-          <div key={i} style={{ marginBottom: "1rem", padding: "0.75rem", background: "#f9fafb", borderRadius: 8 }}>
-            <p style={{ color: "#999", textDecoration: "line-through" }}>{bs.original}</p>
-            <p style={{ color: "#111", fontWeight: 500 }}>{bs.rewritten}</p>
-            <small style={{ color: "#888" }}>Section: {bs.section}</small>
-          </div>
-        ))}
-      </section>
-
-      {/* Summary */}
-      <section>
-        <h3>Summary</h3>
-        <p>{result.summary}</p>
-      </section>
-    </div>
+    </section>
   );
 }

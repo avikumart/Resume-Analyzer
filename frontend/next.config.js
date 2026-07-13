@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
  
-  // Proxy /api/* → backend on Vercel in production
-  // In development, set NEXT_PUBLIC_API_URL in .env.local instead
+  // Proxy /api/* to the backend in every environment. BACKEND_URL remains
+  // server-only so browsers always communicate through the frontend origin.
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL?.replace(/\/$/, "");
     if (!backendUrl) {

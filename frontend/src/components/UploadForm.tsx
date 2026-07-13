@@ -1,81 +1,228 @@
-import { useState, useCallback, DragEvent, ChangeEvent } from "react";
-import { analyzeResume, AnalysisResult } from "../utils/api";
+import {
+  ChangeEvent,
+  DragEvent,
+  FormEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
+import { analyzeResume, ApiRequestError, AnalysisResult } from "../utils/api";
+import styles from "../styles/Home.module.css";
 
 interface UploadFormProps {
+  apiOnline: boolean;
+  onAnalysisStart: () => void;
   onResult: (result: AnalysisResult) => void;
+  onRetryConnection: () => void;
 }
 
-export default function UploadForm({ onResult }: UploadFormProps) {
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
+const ALLOWED_EXTENSIONS = ["pdf", "docx", "txt"];
+
+function validateFile(candidate: File): string | null {
+  const extension = candidate.name.split(".").pop()?.toLowerCase();
+  if (!extension || !ALLOWED_EXTENSIONS.includes(extension)) {
+    return "Choose a PDF, DOCX, or TXT resume.";
+  }
+  if (candidate.size > MAX_FILE_SIZE) {
+    return "Your resume must be smaller than 4 MB for this deployment.";
+  }
+  if (candidate.size === 0) return "The selected file is empty.";
+  return null;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export default function UploadForm({
+  apiOnline,
+  onAnalysisStart,
+  onResult,
+  onRetryConnection,
+}: UploadFormProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragOver(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped) setFile(dropped);
+  const selectFile = useCallback((candidate?: File) => {
+    if (!candidate) return;
+    const validationError = validateFile(candidate);
+    if (validationError) {
+      setFile(null);
+      setError(validationError);
+      return;
+    }
+    setFile(candidate);
+    setError(null);
   }, []);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setFile(e.target.files[0]);
+  const handleDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setDragOver(false);
+      selectFile(event.dataTransfer.files[0]);
+    },
+    [selectFile],
+  );
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    selectFile(event.target.files?.[0]);
   };
 
-  const handleSubmit = async () => {
-    if (!file || !jobDescription.trim()) return;
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+
+    if (!file) {
+      setError("Add your resume before starting the analysis.");
+      return;
+    }
+    if (jobDescription.trim().length < 80) {
+      setError("Add a fuller job description (at least 80 characters) for a useful comparison.");
+      return;
+    }
+    if (!apiOnline) {
+      setError("The analysis API is offline. Retry the connection before submitting.");
+      return;
+    }
+
     setLoading(true);
+    onAnalysisStart();
     try {
-      const result = await analyzeResume(file, jobDescription);
+      const result = await analyzeResume(file, jobDescription.trim());
       onResult(result);
-    } catch (err) {
-      console.error("Analysis failed:", err);
+    } catch (requestError) {
+      const message =
+        requestError instanceof ApiRequestError
+          ? requestError.message
+          : "Analysis failed. Please try again.";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        style={{
-          border: `2px dashed ${dragOver ? "#0070f3" : "#ccc"}`,
-          borderRadius: 8,
-          padding: "2rem",
-          textAlign: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        {file ? (
-          <p>{file.name}</p>
-        ) : (
-          <p>Drag &amp; drop your resume (PDF, DOCX, TXT) or click to browse</p>
-        )}
-        <input
-          type="file"
-          accept=".pdf,.docx,.txt"
-          onChange={handleFileChange}
-          style={{ marginTop: "0.5rem" }}
+    <form className={styles.formCard} onSubmit={handleSubmit} noValidate>
+      <div className={styles.formHeading}>
+        <div>
+          <span className={styles.eyebrow}>New analysis</span>
+          <h2>Compare your resume to a role</h2>
+        </div>
+        <span className={styles.secureNote}>Files are processed securely</span>
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldLabelRow}>
+          <label className={styles.fieldLabel} htmlFor="resume-file">
+            <span className={styles.stepNumber}>1</span> Upload your resume
+          </label>
+          <span className={styles.fieldHint}>PDF, DOCX, or TXT · 4 MB max</span>
+        </div>
+
+        <div
+          className={`${styles.dropzone} ${dragOver ? styles.dropzoneActive : ""} ${file ? styles.dropzoneReady : ""}`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+        >
+          <input
+            ref={inputRef}
+            id="resume-file"
+            className={styles.visuallyHidden}
+            type="file"
+            accept=".pdf,.docx,.txt"
+            onChange={handleFileChange}
+          />
+          {file ? (
+            <div className={styles.selectedFile}>
+              <span className={styles.fileIcon} aria-hidden="true">✓</span>
+              <div>
+                <strong>{file.name}</strong>
+                <span>{formatFileSize(file.size)} · Ready to analyze</span>
+              </div>
+              <button
+                className={styles.textButton}
+                type="button"
+                onClick={() => inputRef.current?.click()}
+              >
+                Replace
+              </button>
+            </div>
+          ) : (
+            <button className={styles.dropzoneButton} type="button" onClick={() => inputRef.current?.click()}>
+              <span className={styles.uploadIcon} aria-hidden="true">↑</span>
+              <strong>Drop your resume here</strong>
+              <span>or click to choose a file</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldLabelRow}>
+          <label className={styles.fieldLabel} htmlFor="job-description">
+            <span className={styles.stepNumber}>2</span> Paste the job description
+          </label>
+          <span className={styles.fieldHint}>{jobDescription.trim().length.toLocaleString()} characters</span>
+        </div>
+        <textarea
+          id="job-description"
+          className={styles.textarea}
+          placeholder="Paste the responsibilities, required skills, and qualifications from the job posting…"
+          value={jobDescription}
+          onChange={(event) => {
+            setJobDescription(event.target.value);
+            if (error) setError(null);
+          }}
+          rows={10}
+          disabled={loading}
         />
       </div>
 
-      <textarea
-        placeholder="Paste the job description here..."
-        value={jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
-        rows={8}
-        style={{ width: "100%", padding: "0.75rem", marginBottom: "1rem" }}
-      />
+      {error && (
+        <div className={styles.errorMessage} role="alert">
+          <span aria-hidden="true">!</span>
+          <div>
+            <strong>We couldn&apos;t start the analysis</strong>
+            <p>{error}</p>
+          </div>
+        </div>
+      )}
 
-      <button onClick={handleSubmit} disabled={loading || !file || !jobDescription.trim()}>
-        {loading ? "Analyzing..." : "Analyze Resume"}
+      {!apiOnline && (
+        <button className={styles.retryButton} type="button" onClick={onRetryConnection}>
+          Retry API connection
+        </button>
+      )}
+
+      <button
+        className={styles.submitButton}
+        type="submit"
+        disabled={loading || !file || jobDescription.trim().length < 80 || !apiOnline}
+      >
+        {loading ? (
+          <>
+            <span className={styles.spinner} aria-hidden="true" />
+            Analyzing your match…
+          </>
+        ) : (
+          <>Analyze resume <span aria-hidden="true">→</span></>
+        )}
       </button>
-    </div>
+      <p className={styles.submitHint} aria-live="polite">
+        {loading
+          ? "Your resume is being compared with the role. This usually takes a few seconds."
+          : "You’ll receive a match score, skill gaps, and stronger bullet suggestions."}
+      </p>
+    </form>
   );
 }

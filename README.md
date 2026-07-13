@@ -2,6 +2,13 @@
 
 AI-powered resume analysis using Cerebras, FastAPI, Next.js, and Supabase.
 
+## Production URLs
+
+- Frontend: [https://resume-analyzer-web-pi.vercel.app](https://resume-analyzer-web-pi.vercel.app)
+- Backend API: [https://resume-analyzer-api-ten.vercel.app](https://resume-analyzer-api-ten.vercel.app)
+- API health: [https://resume-analyzer-api-ten.vercel.app/health](https://resume-analyzer-api-ten.vercel.app/health)
+- Interactive API docs: [https://resume-analyzer-api-ten.vercel.app/docs](https://resume-analyzer-api-ten.vercel.app/docs)
+
 ## Architecture
 
 ```text
@@ -90,8 +97,7 @@ Frontend Vercel project:
 
 | Variable | Required | Purpose |
 |---|---:|---|
-| `BACKEND_URL` | Yes | Production backend URL, such as `https://resume-analyzer-api.vercel.app` |
-| `NEXT_PUBLIC_API_URL` | No | Direct browser API override; normally leave unset |
+| `BACKEND_URL` | Yes | Set to `https://resume-analyzer-api-ten.vercel.app` in production |
 
 Supabase keys are not needed in the browser in the current architecture. The frontend must never receive `SUPABASE_SERVICE_KEY`.
 
