@@ -131,6 +131,75 @@
   box-shadow: 0 24px 70px rgba(30, 62, 44, 0.1);
 }
 
+.connectionCard {
+  margin-bottom: 24px;
+  padding: 22px 24px;
+  border: 1px solid rgba(29, 74, 50, 0.13);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 12px 35px rgba(30, 62, 44, 0.06);
+}
+
+.connectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.connectionHeader h2 {
+  margin: 5px 0 0;
+  color: #20372b;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.connectionRefresh {
+  padding: 7px 10px;
+  border: 1px solid #d4e0d8;
+  border-radius: 8px;
+  color: #286949;
+  background: #f8fbf9;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.connectionFlow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(110px, 0.65fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.connectionNode {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #e1e8e3;
+  border-radius: 10px;
+  background: #fbfdfb;
+}
+
+.connectionNode small,
+.connectionNode strong { display: block; }
+.connectionNode small { margin-bottom: 4px; color: #7a8880; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.connectionNode strong { overflow: hidden; color: #2b4035; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.connectionArrow { color: #75a087; font-size: 16px; font-weight: 800; }
+
+.connectionResult {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e7ece9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6d7a73;
+  font-size: 11px;
+}
+
+.connectionResult strong { margin-right: auto; color: inherit; }
+
 .formHeading,
 .resultsHeader {
   display: flex;
@@ -439,6 +508,11 @@
   .secureNote, .analysisId { display: block; margin-top: 8px; }
   .fieldLabelRow { align-items: flex-start; }
   .fieldHint { max-width: 145px; text-align: right; }
+  .connectionFlow { grid-template-columns: 1fr; }
+  .connectionArrow { transform: rotate(90deg); text-align: center; }
+  .connectionResult { align-items: flex-start; flex-wrap: wrap; }
+  .connectionResult strong { width: calc(100% - 20px); margin: 0; }
+  .connectionResult > span:last-child { width: 100%; padding-left: 15px; }
   .scorePanel { grid-template-columns: 1fr; text-align: center; }
   .scoreRing { margin: 0 auto; }
   .resultGrid, .beforeAfter { grid-template-columns: 1fr; }

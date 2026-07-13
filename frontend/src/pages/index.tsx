@@ -2,7 +2,7 @@ import Head from "next/head";
 import { useCallback, useEffect, useRef, useState } from "react";
 import UploadForm from "../components/UploadForm";
 import ResultsDashboard from "../components/ResultsDashboard";
-import { AnalysisResult, getApiHealth } from "../utils/api";
+import { AnalysisResult, ApiHealth, getApiHealth } from "../utils/api";
 import styles from "../styles/Home.module.css";
 
 type ApiStatus = "checking" | "online" | "offline";
@@ -10,20 +10,31 @@ type ApiStatus = "checking" | "online" | "offline";
 export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [apiStatus, setApiStatus] = useState<ApiStatus>("checking");
+  const [health, setHealth] = useState<ApiHealth | null>(null);
+  const [frontendOrigin, setFrontendOrigin] = useState("Current frontend");
+  const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const checkConnection = useCallback(async () => {
     setApiStatus("checking");
     try {
-      await getApiHealth();
+      const response = await getApiHealth();
+      setHealth(response);
+      setLastChecked(new Date());
       setApiStatus("online");
     } catch {
+      setHealth(null);
+      setLastChecked(new Date());
       setApiStatus("offline");
     }
   }, []);
 
   useEffect(() => {
+    setFrontendOrigin(window.location.origin);
     void checkConnection();
+
+    const interval = window.setInterval(() => void checkConnection(), 30_000);
+    return () => window.clearInterval(interval);
   }, [checkConnection]);
 
   const handleResult = (analysis: AnalysisResult) => {
@@ -64,6 +75,52 @@ export default function Home() {
               <span>Match scoring</span>
               <span>Skill-gap analysis</span>
               <span>Bullet rewrites</span>
+            </div>
+          </section>
+
+          <section className={styles.connectionCard} aria-label="Live frontend to backend connection" aria-live="polite">
+            <div className={styles.connectionHeader}>
+              <div>
+                <span className={styles.eyebrow}>Live connection</span>
+                <h2>Frontend → API proxy → Backend</h2>
+              </div>
+              <button type="button" className={styles.connectionRefresh} onClick={checkConnection}>
+                Refresh check
+              </button>
+            </div>
+            <div className={styles.connectionFlow}>
+              <div className={styles.connectionNode}>
+                <small>Frontend</small>
+                <strong>{frontendOrigin.replace(/^https?:\/\//, "")}</strong>
+              </div>
+              <span className={styles.connectionArrow} aria-hidden="true">→</span>
+              <div className={styles.connectionNode}>
+                <small>Next.js proxy</small>
+                <strong>/api/*</strong>
+              </div>
+              <span className={styles.connectionArrow} aria-hidden="true">→</span>
+              <div className={styles.connectionNode}>
+                <small>Backend</small>
+                <strong>
+                  {(process.env.NEXT_PUBLIC_BACKEND_DISPLAY_URL || health?.service || "Awaiting response")
+                    .replace(/^https?:\/\//, "")}
+                </strong>
+              </div>
+            </div>
+            <div className={`${styles.connectionResult} ${styles[apiStatus]}`}>
+              <span className={styles.statusDot} aria-hidden="true" />
+              <strong>
+                {apiStatus === "checking"
+                  ? "Verifying the route…"
+                  : apiStatus === "online"
+                    ? `Connected to ${health?.service || "backend"}`
+                    : "Connection check failed"}
+              </strong>
+              <span>
+                {lastChecked
+                  ? `Last checked ${lastChecked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
+                  : "Waiting for the first browser check"}
+              </span>
             </div>
           </section>
 
