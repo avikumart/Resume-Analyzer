@@ -51,10 +51,12 @@ function toApiRequestError(error: unknown): ApiRequestError {
   if (responseData?.detail) return new ApiRequestError(responseData.detail, status);
   if (responseData?.message) return new ApiRequestError(responseData.message, status);
   if (error.code === "ECONNABORTED") {
-    return new ApiRequestError("The analysis took too long. Please try again with a smaller resume.");
+    return new ApiRequestError("The analysis took too long. The AI service may be busy; please try again.");
   }
   if (!error.response) {
-    return new ApiRequestError("The API could not be reached. Check your connection and try again.");
+    return new ApiRequestError(
+      "The request ended before the API returned a response. The AI service may be busy; please try again.",
+    );
   }
 
   return new ApiRequestError(`The analysis service returned an error (${status ?? "unknown"}).`, status);
@@ -76,7 +78,7 @@ export async function analyzeResume(file: File, jobDescription: string): Promise
 
   try {
     const { data } = await axios.post<AnalysisResult>(`${API_BASE}/analyze/`, formData, {
-      timeout: 75_000,
+      timeout: 50_000,
     });
     return data;
   } catch (error) {

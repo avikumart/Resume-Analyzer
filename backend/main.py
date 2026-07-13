@@ -84,7 +84,15 @@ async def analyze(
     if not resume_text.strip():
         raise HTTPException(status_code=400, detail="Could not extract text from resume")
 
-    analysis = await llm_service.analyze_resume(resume_text, job_description)
+    try:
+        analysis = await llm_service.analyze_resume(resume_text, job_description)
+    except llm_service.LLMRateLimitError as exc:
+        raise HTTPException(status_code=429, detail=str(exc)) from exc
+    except llm_service.LLMTimeoutError as exc:
+        raise HTTPException(status_code=504, detail=str(exc)) from exc
+    except llm_service.LLMUnavailableError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
     saved = await db_service.save_analysis(analysis, resume_text, job_description)
 
     return AnalysisResponse(id=saved["id"], **analysis)
